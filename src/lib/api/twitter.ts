@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   AuthResponse,
   FollowResponse,
@@ -7,96 +6,76 @@ import {
   ProfileResponse,
   UserResponse,
 } from "@/types/twitter";
-import { STUDENT_HEADER_VALUE } from "./axios";
-
-const api_url = "https://backend-p4-klvc.onrender.com";
-
-const api = axios.create({
-  baseURL: api_url,
-  headers: {
-    "x-student": STUDENT_HEADER_VALUE,
-  },
-});
-
+import { api, authHeaders } from "./axios";
 
 export const register = async (
   username: string,
   email: string,
   password: string
 ): Promise<AuthResponse> => {
-  const { data } = await api.post("/api/auth/register", {
-    username,
-    email,
-    password,
-  });
+  const response = await api.post<AuthResponse>(
+    "/api/auth/register",
+    { username, email, password },
+    { headers: authHeaders() }
+  );
 
-  return data;
+  return response.data;
 };
 
 export const login = async (
   email: string,
   password: string
 ): Promise<AuthResponse> => {
-  const { data } = await api.post("/api/auth/login", {
-    email,
-    password,
-  });
+  const response = await api.post<AuthResponse>(
+    "/api/auth/login",
+    { email, password },
+    { headers: authHeaders() }
+  );
 
-  return data;
+  return response.data;
 };
 
 export const getMe = async (token: string): Promise<UserResponse> => {
-  const { data } = await api.get("/api/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const response = await api.get<UserResponse>("/api/auth/me", {
+    headers: authHeaders(token),
   });
 
-  return data;
+  return response.data;
 };
-
 
 export const getHomePosts = async (
   token: string,
   page = 1
 ): Promise<HomeResponse> => {
-  const { data } = await api.get(`/api/posts/home?page=${page}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const response = await api.get<HomeResponse>(`/api/home?page=${page}`, {
+    headers: authHeaders(token),
   });
 
-  return data;
+  return response.data;
 };
 
 export const createPost = async (
   token: string,
   contenido: string
 ): Promise<PostResponse> => {
-  const { data } = await api.post(
+  const response = await api.post<PostResponse>(
     "/api/posts",
     { contenido },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers: authHeaders(token) }
   );
 
-  return data;
+  return response.data;
 };
 
 export const getPostById = async (
   token: string,
   postId: string
 ): Promise<PostResponse> => {
-  const { data } = await api.get(`/api/posts/${postId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const response = await api.get<PostResponse>(`/api/posts/${postId}`, {
+    headers: authHeaders(token),
   });
 
-  return data;
+  return response.data;
 };
 
 export const deletePost = async (
@@ -104,9 +83,7 @@ export const deletePost = async (
   postId: string
 ): Promise<void> => {
   await api.delete(`/api/posts/${postId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: authHeaders(token),
   });
 };
 
@@ -114,81 +91,62 @@ export const toggleLikePost = async (
   token: string,
   postId: string
 ): Promise<PostResponse> => {
-  const { data } = await api.post(
+  const response = await api.post<PostResponse>(
     `/api/posts/${postId}/like`,
     {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers: authHeaders(token) }
   );
 
-  return data;
+  return response.data;
 };
 
 export const retweetPost = async (
   token: string,
   postId: string
 ): Promise<PostResponse> => {
-  const { data } = await api.post(
+  const response = await api.post<PostResponse>(
     `/api/posts/${postId}/retweet`,
     {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers: authHeaders(token) }
   );
 
-  return data;
+  return response.data;
 };
-
 
 export const addComment = async (
   token: string,
   postId: string,
   contenido: string
 ): Promise<PostResponse> => {
-  const { data } = await api.post(
-    `/api/posts/${postId}/comments`,
+  const response = await api.post<PostResponse>(
+    `/api/posts/${postId}/comment`,
     { contenido },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers: authHeaders(token) }
   );
 
-  return data;
+  return response.data;
 };
 
 export const getProfile = async (
   token: string,
   userId: string
 ): Promise<ProfileResponse> => {
-  const { data } = await api.get(`/api/users/${userId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const response = await api.get<ProfileResponse>(`/api/users/${userId}/profile`, {
+    headers: authHeaders(token),
   });
 
-  return data;
+  return response.data;
 };
 
 export const toggleFollow = async (
   token: string,
   userId: string
 ): Promise<FollowResponse> => {
-  const { data } = await api.post(
+  const response = await api.post<FollowResponse>(
     `/api/users/${userId}/follow`,
     {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    { headers: authHeaders(token) }
   );
 
-  return data;
+  return response.data;
 };

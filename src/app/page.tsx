@@ -13,7 +13,7 @@ const Home = () => {
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(true);
   const [content, setContent] = useState("");
-  const [error, setError] = useState<string | null>(null);
+   const [error, setError] = useState<string | null>(null);
 
   const token = getCookie(TOKEN_COOKIE);
 
@@ -38,9 +38,14 @@ const Home = () => {
   const onPublish = async (e: FormEvent) => {
     e.preventDefault();
     if (!content.trim() || !token) return;
-    await createPost(token, content);
-    setContent("");
-    await load(1);
+    try {
+      setError(null);
+      await createPost(token, content);
+      setContent("");
+      await load(1);
+    } catch {
+      setError("No se pudo publicar el post.");
+    }
   };
 
   const onLike = async (id: string) => {

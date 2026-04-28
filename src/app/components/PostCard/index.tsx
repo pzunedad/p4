@@ -15,7 +15,6 @@ const PostCard = ({ post, onLike, onRetweet }: Props) => {
       <Link href={`/post/${post._id}`} className="postLink">
         <header className="cardHeader">
           <strong>@{post.autor.username}</strong>
-          <small>{new Date(post.fecha).toLocaleString()}</small>
         </header>
         <p>{post.contenido}</p>
       </Link>

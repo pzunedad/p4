@@ -4,60 +4,54 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PostCard from "@/app/components/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
-import { getProfile, retweetPost, toggleFollow, toggleLikePost } from "@/lib/api/twitter";
-import type { PostResponse, UserResponse } from "@/types/twitter";
+import { getPostById, retweetPost, toggleLikePost } from "@/lib/api/twitter";
+import type { PostResponse } from "@/types/twitter";
 
-const ProfilePage = () => {
+const PostPage = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [profile, setProfile] = useState<UserResponse | null>(null);
-  const [posts, setPosts] = useState<PostResponse[]>([]);
+  const [post, setPost] = useState<PostResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const token = getCookie(TOKEN_COOKIE);
-  const userId = params.id;
+  const postId = params.id;
 
   const load = async () => {
     if (!token) return router.push("/login");
-    const profileData = await getProfile(token, userId);
-    setProfile(profileData.user);
-    setPosts(profileData.posts);
+    try {
+      setError(null);
+      const postData = await getPostById(token, postId);
+      setPost(postData);
+    } catch {
+      setError("No se pudo cargar el post.");
+    }
   };
 
   useEffect(() => {
-    if (userId) {
+    if (postId) {
       void load();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [postId]);
 
-  if (!profile) return <p>Cargando perfil...</p>;
+  if (error) return <p>{error}</p>;
+  if (!post) return <p>Cargando post...</p>;
 
   return (
     <section className="pageSection">
-      <article className="card">
-        <h1>@{profile.username}</h1>
-        <p>{profile.email}</p>
-        <button className="btn primary" onClick={() => void toggleFollow(token!, userId).then(load)}>
-          Seguir / Dejar de seguir
-        </button>
-      </article>
-
-      {posts.map((post) => (
-        <PostCard
-          key={post._id}
-          post={post}
-          onLike={async (id) => {
-            await toggleLikePost(token!, id);
-            await load();
-          }}
-          onRetweet={async (id) => {
-            await retweetPost(token!, id);
-            await load();
-          }}
-        />
-      ))}
+      <PostCard
+        post={post}
+        onLike={async (id) => {
+          await toggleLikePost(token!, id);
+          await load();
+        }}
+        onRetweet={async (id) => {
+          await retweetPost(token!, id);
+          await load();
+        }}
+      />
     </section>
   );
 };
 
-export default ProfilePage;
+export default PostPage;

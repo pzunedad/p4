@@ -34,7 +34,6 @@ export type PostResponse = {
   likes: string[];
   retweets: Retweet[];
   comentarios: Comentario[];
-  fecha: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -57,5 +56,6 @@ export type FollowResponse = {
 };
 
 export type ErrorResponse = {
-  error: string;
+  error?: string;
+  message?: string;
 };

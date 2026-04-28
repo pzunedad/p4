@@ -12,15 +12,21 @@ const ProfilePage = () => {
   const router = useRouter();
   const [profile, setProfile] = useState<UserResponse | null>(null);
   const [posts, setPosts] = useState<PostResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const token = getCookie(TOKEN_COOKIE);
   const userId = params.id;
 
   const load = async () => {
     if (!token) return router.push("/login");
-    const profileData = await getProfile(token, userId);
-    setProfile(profileData.user);
-    setPosts(profileData.posts);
+    try {
+      setError(null);
+      const profileData = await getProfile(token, userId);
+      setProfile(profileData.user);
+      setPosts(profileData.posts);
+    } catch {
+      setError("No se pudo cargar el perfil.");
+    }
   };
 
   useEffect(() => {
@@ -30,6 +36,7 @@ const ProfilePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  if (error) return <p>{error}</p>;
   if (!profile) return <p>Cargando perfil...</p>;
 
   return (
