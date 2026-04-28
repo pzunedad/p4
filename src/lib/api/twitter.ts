@@ -1,18 +1,8 @@
-export type Auth = { 
-  username: string,
-  email: string,
-  password: string
-}
+import { api, authHeaders } from "./axios";
+import axios from "axios";
+import { AuthResponse,HomeResponse,PostResponse,ProfileResponse,UserResponse,FollowResponse } from "@/types/twitter";
 
-export type Post = {
-    id: string,
-    like: boolean,
-    retweet: boolean,
-    comment: string,
-    contenido: string
-}
+import { STUDENT_HEADER_VALUE } from "./axios";
 
-export type Profile = {
-    id: string,
-    follow: string
-}
+const API_URL = "https://backend-p4-klvc.onrender.com";
+
