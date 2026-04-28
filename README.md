@@ -29,14 +29,14 @@ La navegación se apoya en rutas del App Router y en un componente de navegació
 - **`/post/[id]`**: detalle de un post individual.
 - **`/profile/[id]`**: perfil de usuario y sus posts.
 
-### Cómo está organizada
+### Cómo está organizada la estructura del proyecto
 
 - El layout raíz (`src/app/layout.tsx`) renderiza `NavegadorPags` para mantener una navegación consistente en toda la app.
 - `NavegadorPags` (`src/app/components/NavegadorPags/index.tsx`) calcula dinámicamente el enlace a perfil leyendo `user_id` desde la cookie.
 - La protección de rutas se centraliza en `src/proxy.ts`: si no hay token y se intenta entrar a rutas privadas (`/`, `/post/*`, `/profile/*`), se redirige a `/login`.
 - Tras autenticación en `src/app/login/page.tsx`, se guardan cookies (`token`, `user_id`) y se navega al timeline.
 
-## Datos anidados de la API: enfoque y resolución
+## Datos anidados de la API:
 
 La API devuelve estructuras anidadas (por ejemplo, `post.autor.username`, arrays de `likes`, `retweets` y `comentarios`). Para evitar errores y mantener el tipado, se resolvió así:
 
