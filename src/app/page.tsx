@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PostCard from "./components/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
+import { createPost, getHomePosts, retweetPost, toggleLikePost } from "@/lib/api/twitter";
 import type { PostResponse } from "@/types/twitter";
 
 const Home = () => {
@@ -20,10 +21,10 @@ const Home = () => {
     if (!token) return router.push("/login");
     try {
       setError(null);
-      const result = await getFeed(token, newPage);
-      setPosts(result.items);
-      setPage(newPage);
-      setHasNext(Boolean(result.meta.hasNext));
+      const result = await getHomePosts(token, newPage);
+      setPosts(result.posts);
+      setPage(result.pagina);
+      setHasNext(result.pagina < result.totalPaginas);
     } catch {
       setError("No se pudieron cargar los posts.");
     }
@@ -31,22 +32,26 @@ const Home = () => {
 
   useEffect(() => {
     void load(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onPublish = async (e: FormEvent) => {
     e.preventDefault();
     if (!content.trim() || !token) return;
+    await createPost(token, content);
     setContent("");
     await load(1);
   };
 
   const onLike = async (id: string) => {
     if (!token) return;
+    await toggleLikePost(token, id);
     await load(page);
   };
 
   const onRetweet = async (id: string) => {
     if (!token) return;
+    await retweetPost(token, id);
     await load(page);
   };
 

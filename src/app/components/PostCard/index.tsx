@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import type { Post } from "@/types/twitter";
+import type { PostResponse } from "@/types/twitter";
 
 type Props = {
-  post: Post;
+  post: PostResponse;
   onLike: (id: string) => Promise<void>;
   onRetweet: (id: string) => Promise<void>;
 };
@@ -12,19 +12,19 @@ type Props = {
 const PostCard = ({ post, onLike, onRetweet }: Props) => {
   return (
     <article className="card">
-      <Link href={`/post/${post.id}`} className="postLink">
+      <Link href={`/post/${post._id}`} className="postLink">
         <header className="cardHeader">
-          <strong>@{post.author.username}</strong>
-          <small>{new Date(post.createdAt).toLocaleString()}</small>
+          <strong>@{post.autor.username}</strong>
+          <small>{new Date(post.fecha).toLocaleString()}</small>
         </header>
-        <p>{post.content}</p>
+        <p>{post.contenido}</p>
       </Link>
       <footer className="actions">
-        <button className="btn" onClick={() => onLike(post.id)}>
-          ❤️ {post.likesCount}
+        <button className="btn" onClick={() => onLike(post._id)}>
+          ❤️ {post.likes.length}
         </button>
-        <button className="btn" onClick={() => onRetweet(post.id)}>
-          🔁 {post.retweetsCount}
+        <button className="btn" onClick={() => onRetweet(post._id)}>
+          🔁 {post.retweets.length}
         </button>
       </footer>
     </article>

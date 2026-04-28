@@ -1,89 +1,63 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { createComment, getComments, getPostDetail, toggleLike, toggleRetweet } from "@/lib/api/twitter";
+import PostCard from "@/app/components/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
-import type { Comment, Post } from "@/types/twitter";
+import { getProfile, retweetPost, toggleFollow, toggleLikePost } from "@/lib/api/twitter";
+import type { PostResponse, UserResponse } from "@/types/twitter";
 
-const PostDetailPage = () => {
+const ProfilePage = () => {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [comment, setComment] = useState("");
+  const [profile, setProfile] = useState<UserResponse | null>(null);
+  const [posts, setPosts] = useState<PostResponse[]>([]);
 
   const token = getCookie(TOKEN_COOKIE);
+  const userId = params.id;
 
   const load = async () => {
     if (!token) return router.push("/login");
-    const [postData, commentsData] = await Promise.all([
-      getPostDetail(token, params.id),
-      getComments(token, params.id, 1),
-    ]);
-    setPost(postData);
-    setComments(commentsData.items);
+    const profileData = await getProfile(token, userId);
+    setProfile(profileData.user);
+    setPosts(profileData.posts);
   };
 
   useEffect(() => {
-    if (params.id) {
+    if (userId) {
       void load();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  }, [userId]);
 
-  const onComment = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!token || !comment.trim()) return;
-    await createComment(token, params.id, comment);
-    setComment("");
-    await load();
-  };
-
-  if (!post) return <p>Cargando...</p>;
+  if (!profile) return <p>Cargando perfil...</p>;
 
   return (
     <section className="pageSection">
       <article className="card">
-        <header className="cardHeader">
-          <strong>@{post.author.username}</strong>
-          <small>{new Date(post.createdAt).toLocaleString()}</small>
-        </header>
-        <p>{post.content}</p>
-        <div className="actions">
-          <button className="btn" onClick={() => void toggleLike(token!, post.id).then(load)}>
-            ❤️ {post.likesCount}
-          </button>
-          <button className="btn" onClick={() => void toggleRetweet(token!, post.id).then(load)}>
-            🔁 {post.retweetsCount}
-          </button>
-        </div>
+        <h1>@{profile.username}</h1>
+        <p>{profile.email}</p>
+        <button className="btn primary" onClick={() => void toggleFollow(token!, userId).then(load)}>
+          Seguir / Dejar de seguir
+        </button>
       </article>
 
-      <form className="card" onSubmit={onComment}>
-        <textarea
-          rows={3}
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Escribe un comentario"
-          required
+      {posts.map((post) => (
+        <PostCard
+          key={post._id}
+          post={post}
+          onLike={async (id) => {
+            await toggleLikePost(token!, id);
+            await load();
+          }}
+          onRetweet={async (id) => {
+            await retweetPost(token!, id);
+            await load();
+          }}
         />
-        <button className="btn primary" type="submit">
-          Comentar
-        </button>
-      </form>
-
-      {comments.map((item) => (
-        <article className="card" key={item.id}>
-          <header className="cardHeader">
-            <strong>@{item.author.username}</strong>
-            <small>{new Date(item.createdAt).toLocaleString()}</small>
-          </header>
-          <p>{item.content}</p>
-        </article>
       ))}
     </section>
   );
 };
 
-export default PostDetailPage;
+export default ProfilePage;

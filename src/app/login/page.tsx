@@ -18,13 +18,11 @@ const LoginPage = () => {
 
     try {
       const auth = isRegister
-        ? await register({ username, email, password })
-        : await login({ email, password });
+        ? await register(username, email, password)
+        : await login(email, password);
 
       setCookie(TOKEN_COOKIE, auth.token);
-      if (username) {
-        setCookie(USER_ID_COOKIE, username);
-      }
+      setCookie(USER_ID_COOKIE, auth.user._id);
       router.push("/");
     } catch {
       setError("No se pudo completar la autenticación.");
