@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Clon de Twitter
 
-## Getting Started
+Aplicación cliente construida con **Next** para autenticación, timeline, detalle de post y perfil de usuario, consumiendo una API de uso educativo.
 
-First, run the development server:
+## Instalación y arranque
+
+1. Instalar dependencias como Axios:
+
+```bash
+npm install axios
+```
+
+2. Inicia el entorno de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Abre el Twitter Clone en terminal y te da tu:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `http://localhost:3000`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Estructura de navegación
 
-## Learn More
+La navegación se apoya en rutas del App Router y en un componente de navegación global:
 
-To learn more about Next.js, take a look at the following resources:
+- **`/login`**: pantalla de autenticación (login/registro).
+- **`/`**: timeline principal con paginación y creación de posts.
+- **`/post/[id]`**: detalle de un post individual.
+- **`/profile/[id]`**: perfil de usuario y sus posts.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Cómo está organizada
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- El layout raíz (`src/app/layout.tsx`) renderiza `NavegadorPags` para mantener una navegación consistente en toda la app.
+- `NavegadorPags` (`src/app/components/NavegadorPags/index.tsx`) calcula dinámicamente el enlace a perfil leyendo `user_id` desde la cookie.
+- La protección de rutas se centraliza en `src/proxy.ts`: si no hay token y se intenta entrar a rutas privadas (`/`, `/post/*`, `/profile/*`), se redirige a `/login`.
+- Tras autenticación en `src/app/login/page.tsx`, se guardan cookies (`token`, `user_id`) y se navega al timeline.
 
-## Deploy on Vercel
+## Datos anidados de la API: enfoque y resolución
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+La API devuelve estructuras anidadas (por ejemplo, `post.autor.username`, arrays de `likes`, `retweets` y `comentarios`). Para evitar errores y mantener el tipado, se resolvió así:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Llamadas**
+   - En `src/lib/api/twitter.ts` se centralizan todas las llamadas HTTP, cada una con su tipo de retorno (`Promise<PostResponse>`, `Promise<ProfileResponse>`, etc.).
+   - Los componentes de imterfaz consumen datos ya tipados y no mezclan lógica de red con renderizado.
+
+2. **Presentación desacoplada de la forma anidada**
+   - `PostCard` (`src/app/components/PostCard/index.tsx`) recibe un `PostResponse` y usa directamente propiedades anidadas controladas por tipos (`post.autor.username`, `post.likes.length`, `post.retweets.length`).
+   - Las pantallas (`/`, `/post/[id]`, `/profile/[id]`) sólo gestionan carga/estado y solo hace el pintado del objeto anidado al componente.
+
+3. **Recarga tras las acciones**
+   - Acciones como like/retweet/follow vuelven a cargar los datos desde servidor para mantener sincronizada la interfaz cuando cambian contadores o relaciones anidadas.
+
