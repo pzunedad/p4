@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { deleteCookie, getCookie, USER_ID_COOKIE } from "@/lib/auth/token";
+import { deleteCookie, getCookie, TOKEN_COOKIE, USER_ID_COOKIE, USERNAME_COOKIE } from "@/lib/auth/token";
 import "./styles.css";
 
 const NavegadorPags = () => {
@@ -25,8 +25,9 @@ const NavegadorPags = () => {
         className="NavigatorLink"
         href="/login"
         onClick={() => {
-          deleteCookie("token");
+          deleteCookie(TOKEN_COOKIE);
           deleteCookie(USER_ID_COOKIE);
+          deleteCookie(USERNAME_COOKIE);
         }}
       >
         Desconectar

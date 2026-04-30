@@ -2,8 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { login, register } from "@/lib/api/twitter";
-import { setCookie, TOKEN_COOKIE, USER_ID_COOKIE } from "@/lib/auth/token";
+import { loginUser, registerUser } from "@/lib/api/twitter";
+import { setCookie, TOKEN_COOKIE, USER_ID_COOKIE, USERNAME_COOKIE } from "@/lib/auth/token";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -18,11 +18,12 @@ const LoginPage = () => {
 
     try {
       const auth = isRegister
-        ? await register(username, email, password)
-        : await login(email, password);
+        ? await registerUser(username, email, password)
+        : await loginUser(email, password);
 
       setCookie(TOKEN_COOKIE, auth.token);
       setCookie(USER_ID_COOKIE, auth.user._id);
+      setCookie(USERNAME_COOKIE, auth.user.username);
       router.push("/");
     } catch {
       setError("No se pudo completar la autenticación.");

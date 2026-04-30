@@ -6,146 +6,179 @@ import {
   ProfileResponse,
   UserResponse,
 } from "@/types/twitter";
-import { api, authHeaders } from "./axios";
+import axios from "axios";
 
-export const register = async (
+const API_URL = "https://backend-p4-klvc.onrender.com";
+
+const ALUMNO = "Pedro"
+
+const getToken = () => {
+  return document.cookie
+    .split("; ")
+    .find((cookie) => cookie.startsWith("token="))
+    ?.split("=")[1];
+};
+
+const getAuthHeaders = () => {
+  const token = getToken();
+
+  return {
+    "x-nombre": ALUMNO,
+    Authorization: `Bearer ${token}`,
+  };
+};
+
+const getPublicHeaders = () => {
+  return {
+    "x-nombre": ALUMNO,
+  };
+};
+
+export const loginUser = async (
+  email: string,
+  password: string
+): Promise<AuthResponse> => {
+  const response = await axios.post<AuthResponse>(
+    `${API_URL}/api/auth/login`,
+    {
+      email,
+      password,
+    },
+    {
+      headers: getPublicHeaders(),
+    }
+  );
+
+  return response.data;
+};
+
+export const registerUser = async (
   username: string,
   email: string,
   password: string
 ): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>(
-    "/api/auth/register",
-    { username, email, password },
-    { headers: authHeaders() }
+  const response = await axios.post<AuthResponse>(
+    `${API_URL}/api/auth/register`,
+    {
+      username,
+      email,
+      password,
+    },
+    {
+      headers: getPublicHeaders(),
+    }
   );
 
   return response.data;
 };
 
-export const login = async (
-  email: string,
-  password: string
-): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>(
-    "/api/auth/login",
-    { email, password },
-    { headers: authHeaders() }
+export const getPosts = async (page: number): Promise<HomeResponse> => {
+  const response = await axios.get<HomeResponse>(
+    `${API_URL}/api/home?page=${page}`,
+    {
+      headers: getAuthHeaders(),
+    }
   );
-
-  return response.data;
-};
-
-export const getMe = async (token: string): Promise<UserResponse> => {
-  const response = await api.get<UserResponse>("/api/auth/me", {
-    headers: authHeaders(token),
-  });
-
-  return response.data;
-};
-
-export const getHomePosts = async (
-  token: string,
-  page = 1
-): Promise<HomeResponse> => {
-  const response = await api.get<HomeResponse>(`/api/home?page=${page}`, {
-    headers: authHeaders(token),
-  });
 
   return response.data;
 };
 
 export const createPost = async (
-  token: string,
   contenido: string
 ): Promise<PostResponse> => {
-  const response = await api.post<PostResponse>(
-    "/api/posts",
-    { contenido },
-    { headers: authHeaders(token) }
+  const response = await axios.post<PostResponse>(
+    `${API_URL}/api/posts`,
+    {
+      contenido,
+    },
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return response.data;
 };
 
-export const getPostById = async (
-  token: string,
-  postId: string
-): Promise<PostResponse> => {
-  const response = await api.get<PostResponse>(`/api/posts/${postId}`, {
-    headers: authHeaders(token),
-  });
+export const getPostById = async (id: string): Promise<PostResponse> => {
+  const response = await axios.get<PostResponse>(
+    `${API_URL}/api/posts/${id}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
 
   return response.data;
 };
 
-export const deletePost = async (
-  token: string,
-  postId: string
-): Promise<void> => {
-  await api.delete(`/api/posts/${postId}`, {
-    headers: authHeaders(token),
-  });
-};
-
-export const toggleLikePost = async (
-  token: string,
-  postId: string
-): Promise<PostResponse> => {
-  const response = await api.post<PostResponse>(
-    `/api/posts/${postId}/like`,
+export const likePost = async (id: string): Promise<PostResponse> => {
+  const response = await axios.post<PostResponse>(
+    `${API_URL}/api/posts/${id}/like`,
     {},
-    { headers: authHeaders(token) }
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return response.data;
 };
 
-export const retweetPost = async (
-  token: string,
-  postId: string
-): Promise<PostResponse> => {
-  const response = await api.post<PostResponse>(
-    `/api/posts/${postId}/retweet`,
+export const retweetPost = async (id: string): Promise<PostResponse> => {
+  const response = await axios.post<PostResponse>(
+    `${API_URL}/api/posts/${id}/retweet`,
     {},
-    { headers: authHeaders(token) }
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return response.data;
 };
 
-export const addComment = async (
-  token: string,
-  postId: string,
+export const createComment = async (
+  id: string,
   contenido: string
 ): Promise<PostResponse> => {
-  const response = await api.post<PostResponse>(
-    `/api/posts/${postId}/comment`,
-    { contenido },
-    { headers: authHeaders(token) }
+  const response = await axios.post<PostResponse>(
+    `${API_URL}/api/posts/${id}/comment`,
+    {
+      contenido,
+    },
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return response.data;
 };
 
-export const getProfile = async (
-  token: string,
-  userId: string
+export const getMyProfile = async (): Promise<UserResponse> => {
+  const response = await axios.get(`${API_URL}/api/users/me`, {
+    headers: getAuthHeaders(),
+  });
+
+  return response.data.user || response.data;
+};
+
+export const getProfileById = async (
+  id: string
 ): Promise<ProfileResponse> => {
-  const response = await api.get<ProfileResponse>(`/api/users/${userId}/profile`, {
-    headers: authHeaders(token),
-  });
+  const response = await axios.get<ProfileResponse>(
+    `${API_URL}/api/users/${id}/profile`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
 
   return response.data;
 };
 
-export const toggleFollow = async (
-  token: string,
-  userId: string
-): Promise<FollowResponse> => {
-  const response = await api.post<FollowResponse>(
-    `/api/users/${userId}/follow`,
+export const followUser = async (id: string): Promise<FollowResponse> => {
+  const response = await axios.post<FollowResponse>(
+    `${API_URL}/api/users/${id}/follow`,
     {},
-    { headers: authHeaders(token) }
+    {
+      headers: getAuthHeaders(),
+    }
   );
 
   return response.data;

@@ -1,5 +1,6 @@
 export const TOKEN_COOKIE = "token";
 export const USER_ID_COOKIE = "user_id";
+export const USERNAME_COOKIE = "username";
 
 export const getCookie = (name: string): string | null => {
   if (typeof document === "undefined") return null;
