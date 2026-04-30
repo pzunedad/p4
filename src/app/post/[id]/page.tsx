@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PostCard from "@/app/components/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
-import { getPostById, retweetPost, toggleLikePost } from "@/lib/api/twitter";
+import { getPostById, retweetPost, likePost} from "@/lib/api/twitter";
 import type { PostResponse } from "@/types/twitter";
 
 const PostPage = () => {
@@ -20,7 +20,7 @@ const PostPage = () => {
     if (!token) return router.push("/login");
     try {
       setError(null);
-      const postData = await getPostById(token, postId);
+      const postData = await getPostById(postId);
       setPost(postData);
     } catch {
       setError("No se pudo cargar el post.");
@@ -31,7 +31,6 @@ const PostPage = () => {
     if (postId) {
       void load();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   if (error) return <p>{error}</p>;
@@ -42,11 +41,11 @@ const PostPage = () => {
       <PostCard
         post={post}
         onLike={async (id) => {
-          await toggleLikePost(token!, id);
+          await likePost(id);
           await load();
         }}
         onRetweet={async (id) => {
-          await retweetPost(token!, id);
+          await retweetPost(id);
           await load();
         }}
       />

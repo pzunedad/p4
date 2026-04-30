@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PostCard from "./components/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
-import { createPost, getHomePosts, retweetPost, toggleLikePost } from "@/lib/api/twitter";
+import { createPost, getPosts, retweetPost, likePost } from "@/lib/api/twitter";
 import type { PostResponse } from "@/types/twitter";
 
 const Home = () => {
@@ -21,7 +21,7 @@ const Home = () => {
     if (!token) return router.push("/login");
     try {
       setError(null);
-      const result = await getHomePosts(token, newPage);
+      const result = await getPosts(newPage);
       setPosts(result.posts);
       setPage(result.pagina);
       setHasNext(result.pagina < result.totalPaginas);
@@ -40,7 +40,7 @@ const Home = () => {
     if (!content.trim() || !token) return;
     try {
       setError(null);
-      await createPost(token, content);
+      await createPost(content);
       setContent("");
       await load(1);
     } catch {
@@ -50,13 +50,13 @@ const Home = () => {
 
   const onLike = async (id: string) => {
     if (!token) return;
-    await toggleLikePost(token, id);
+    await likePost(id);
     await load(page);
   };
 
   const onRetweet = async (id: string) => {
     if (!token) return;
-    await retweetPost(token, id);
+    await retweetPost(id);
     await load(page);
   };
 

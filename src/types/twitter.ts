@@ -2,6 +2,7 @@ export type UserResponse = {
   _id: string;
   username: string;
   email: string;
+  posts: PostResponse[];
 };
 
 export type AuthResponse = {

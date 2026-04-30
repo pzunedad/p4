@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const proxy = (request: NextRequest) => {
 
-const pathname = request.nextUrl.pathname;
-  const token = request.cookies.get("token")?.value;
+  const pathname = request.nextUrl.pathname;
+  const token = request.cookies.get("token");
 
   if (!token && pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -15,7 +15,6 @@ const pathname = request.nextUrl.pathname;
 
   return NextResponse.next();
 }
-
 export const config = {
   matcher: ["/", "/post/:path*", "/profile/:path*", "/login"],
 };

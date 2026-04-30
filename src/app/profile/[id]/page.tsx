@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import PostCard from "@/app/components/PostCard";
 import { getCookie, TOKEN_COOKIE } from "@/lib/auth/token";
-import { getProfile, retweetPost, toggleFollow, toggleLikePost } from "@/lib/api/twitter";
+import { getMyProfile, retweetPost, followUser, likePost } from "@/lib/api/twitter";
 import type { PostResponse, UserResponse } from "@/types/twitter";
 
 const ProfilePage = () => {
@@ -21,9 +21,9 @@ const ProfilePage = () => {
     if (!token) return router.push("/login");
     try {
       setError(null);
-      const profileData = await getProfile(token, userId);
-      setProfile(profileData.user);
-      setPosts(profileData.posts);
+      const profileData = await getMyProfile();
+      setProfile(profileData);
+      setPosts(profileData.posts ?? []);
     } catch {
       setError("No se pudo cargar el perfil.");
     }
@@ -33,7 +33,6 @@ const ProfilePage = () => {
     if (userId) {
       void load();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   if (error) return <p>{error}</p>;
@@ -44,7 +43,7 @@ const ProfilePage = () => {
       <article className="card">
         <h1>@{profile.username}</h1>
         <p>{profile.email}</p>
-        <button className="btn primary" onClick={() => void toggleFollow(token!, userId).then(load)}>
+        <button className="btn primary" onClick={() => void followUser(userId).then(load)}>
           Seguir / Dejar de seguir
         </button>
       </article>
@@ -54,11 +53,11 @@ const ProfilePage = () => {
           key={post._id}
           post={post}
           onLike={async (id) => {
-            await toggleLikePost(token!, id);
+            await likePost(id);
             await load();
           }}
           onRetweet={async (id) => {
-            await retweetPost(token!, id);
+            await retweetPost(id);
             await load();
           }}
         />
